@@ -1,14 +1,12 @@
 package com.clara.apimovies.model;
 
-import androidx.annotation.NonNull;
-
 public class Movie {
 
     private int id;
     private String name;
     private float rating;
 
-    public Movie(@NonNull String name, float rating) {
+    public Movie(String name, float rating) {
         this.name = name;
         this.rating = rating;
     }
@@ -16,6 +14,7 @@ public class Movie {
     public int getId() {
         return id;
     }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -45,3 +44,4 @@ public class Movie {
                 '}';
     }
 }
+
