@@ -73,11 +73,13 @@ public class MovieRepository {
         return movie;
     }
 
-    public void insert(final Movie movie) {
+    public MutableLiveData<String> insert(final Movie movie) {
 
         // TODO
+        return null;  // replace with your code
 
     }
+
 
     public void update(final Movie movie) {
 
