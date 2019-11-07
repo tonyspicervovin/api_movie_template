@@ -8,8 +8,15 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class AuthorizationHeaderInterceptor {
+public class AuthorizationHeaderInterceptor implements Interceptor {
 
-    // TODO
-
+    @Override
+    public Response intercept(Chain chain) throws IOException {
+        Request request = chain.request();
+        Request requestWithHeaders = request.newBuilder()
+                .addHeader("Authorization", BuildConfig.MOVIE_API_KEY)
+                .build();
+        return chain.proceed(requestWithHeaders);
+    }
+    // creating a header parameter that we can use for each call
 }

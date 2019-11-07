@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.clara.apimovies.model.Movie;
@@ -43,7 +44,9 @@ public class AddMovieFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO initialize mMovieViewModel
+        mMovieViewModel = ViewModelProviders.of(getActivity()).get(MovieViewModel.class);
+
+        // initialize mMovieViewModel
 
     }
 
@@ -67,7 +70,19 @@ public class AddMovieFragment extends Fragment {
                 float rating = movieRating.getRating();   //how many stars selected
                 Movie movie = new Movie(name, rating);
 
-                // TODO use mMovieViewModel to insert new movie
+                // use mMovieViewModel to insert new movie
+                mMovieViewModel.insert(movie).observe(getActivity(), new Observer<String>() {
+                    @Override
+                    public void onChanged(String s) {
+                        if (s.equals("success")) {
+                            Toast.makeText(getActivity(), "Movie added!", Toast.LENGTH_SHORT).show();
+                        }else if (s.contains("duplicate key")) {
+                            Toast.makeText(getActivity(), "You already added that movie!", Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(getActivity(), "Error adding movie", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
                 newMovieListener.onMovieAdded(movie);  // notifies Activity so fragments can be swapped
 

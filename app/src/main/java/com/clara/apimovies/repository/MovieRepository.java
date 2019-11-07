@@ -28,16 +28,43 @@ public class MovieRepository {
 
     public MovieRepository() {
 
-        // TODO create client with interceptor to set header on each request
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new AuthorizationHeaderInterceptor())
+                .build();
 
-        // TODO create and configure Retrofit instance
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseURL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-        // TODO initialize allMovies
+        mMovieService = retrofit.create(MovieService.class);
+
+        mAllMovies = new MutableLiveData<>();
+
     }
 
     public MutableLiveData<List<Movie>> getAllMovies() {
 
-       return null;  // TODO finish this method, replace with your code
+        mMovieService.getAllMovies().enqueue(new Callback<List<Movie>>() {
+            @Override
+            public void onResponse(Call<List<Movie>> call, Response<List<Movie>> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "getAllMovies response body: " + response.body());
+                    mAllMovies.setValue(response.body());
+                }else {
+                    Log.e(TAG, "Error getting all movies, message from server: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Movie>> call, Throwable t) {
+                Log.e(TAG, "Error fetching all movies", t);
+
+            }
+        });
+
+       return mAllMovies;
 
     }
 
@@ -75,22 +102,87 @@ public class MovieRepository {
 
     public MutableLiveData<String> insert(final Movie movie) {
 
-        // TODO
-        return null;  // replace with your code
+        final MutableLiveData<String> insertResult = new MutableLiveData<>();
+
+        mMovieService.insert(movie).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "inserted " + movie);
+                    insertResult.setValue("success");
+                    getAllMovies();
+                }else {
+                    String error;
+                    try {
+                        error = response.errorBody().string();
+                        insertResult.setValue(error);
+                        Log.e(TAG, "Error inserting movie, response from server: " + error + " message " + response.message());
+
+                    }catch (Exception e) {
+                        insertResult.setValue("error");
+                        Log.e(TAG, "Error inserting movie, message from server: " + response.message());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                insertResult.setValue("error");
+                Log.e(TAG, "Error inserting movie " + movie, t);
+
+            }
+        });
+
+
+        return insertResult;  // replace with your code
 
     }
 
 
     public void update(final Movie movie) {
 
-        // TODO
+        mMovieService.update(movie, movie.getId()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "updating movie " + movie);
+                    getAllMovies();
+                }else {
+                    Log.e(TAG, "Errpr updating movie, message from server: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "Error updating movie " + movie, t);
+
+            }
+        });
+
+
 
     }
 
 
     public void delete(final Movie movie) {
 
-        // TODO
+       mMovieService.delete(movie.getId()).enqueue(new Callback<Void>() {
+           @Override
+           public void onResponse(Call<Void> call, Response<Void> response) {
+               if (response.isSuccessful()) {
+                   Log.d(TAG, "deleted movie " + movie);
+                   getAllMovies();
+               }else {
+                   Log.e(TAG, "Error deleting movie, message from server: " + response.message());
+               }
+           }
+
+           @Override
+           public void onFailure(Call<Void> call, Throwable t) {
+               Log.e(TAG, "Error deleting movie " + movie, t);
+
+           }
+       });
 
     }
 
